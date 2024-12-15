@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { userInfo } from 'os';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -26,7 +27,16 @@ router.post('/', async (req, res) => {
 // LIST tweets
 router.get('/', async (req, res) => {
     try {
-        const result = await prisma.tweet.findMany()
+        const result = await prisma.tweet.findMany({
+            include: {user: {
+                select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    userName: true,
+                }
+            }}
+        })
 
         res.status(200).json(result)
     } catch (e) {
@@ -40,6 +50,7 @@ router.get('/:id', async (req, res) => {
 
     try {
         const locatedTweet = await prisma.tweet.findUnique({
+            include: {user: true},
             where: { id: Number(id) },
         })
 
